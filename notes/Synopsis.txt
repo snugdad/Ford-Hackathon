@@ -8,6 +8,7 @@ Problem:
 
 
 Key Learning Points
+*   Ask if we are going to need SPM, LPM, or PDM: This document currently assumes PDM as it is the most logical route (but wtf do i know).  
 
 *   We need to find out how they are doing filtration for malicious applications. There are several functionality features that need to be considered. 
     > Potential Solutions
@@ -18,6 +19,9 @@ Key Learning Points
         * Hardware segregation and segmented memory/os
             - Package can run as a peripheral to the main system as a stand alone process
             or Package can be placed on its own cpu/physical device and interface with the main control system through restricted channels
+        * Package manager itself will run a light subroutine of the error checking done, with focus on the specific vehicle and it's available subsystems
+
+*   We need to know their versioning schema and how they develop their software as a team, as well as any subversioning they may perform as part of their network/registry datatabase. If we are going integrate this project into their system this is essential. 
             
 
 Solution:
