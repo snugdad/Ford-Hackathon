@@ -3,7 +3,10 @@
 > Project Code - Developed source code, under version control
 
 > Manifest file - Holds project metadata listing the depended upon packages to be managed
-
+    *   All project metadata is available to be cached in the pull registry and can be extracted via HTTP API calls
+    *   Our project will only pull from one registry, the Ford one.
+    *   Filtration of garbage or malicious applications will take place at the registry level
+     
 > Lock file - Contains all the information to reproduce the full dependency source tree
 
 > Dependency code - all source code named in lock file, arranged on disk such that the compiler/ interpreter
