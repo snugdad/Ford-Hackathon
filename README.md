@@ -1,3 +1,3 @@
-![krby](./assets/images/krby_logos/logo_transparent.png)
+![krby](./assets/images/krby_logos/linkedin_banner_image_2.png)
 # README
 Porting apps to the car
