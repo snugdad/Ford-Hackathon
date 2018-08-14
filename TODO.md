@@ -1,18 +1,21 @@
 # TODO
 
-## High Priority
+## High Priority :
+- [ ] package demo app "Hello World"(HeWo)
 
-	- [ ] package demo app "Hello World"(HeWo)
-
+ - [ ] webserver
 	- [ ] serverside security verification
-		- [ ] check developer certs
-		- [ ] (?) testing in dummy container
-		- [ ] check that program is bin
-			- [ ] check that binary is not malicious
+		- [ ] HMACs
+		//- [ ] check developer certs
+		//- [ ] (?) testing in dummy container
 
-	- [ ] port from cloud to local device
-		- [ ] upload over HTTPS/SSL
+ - [ ] port from cloud to local device
+	- [ ] upload over HTTPS/SSL
 
+ - [ ] raspi applcation management
+	- [ ] install applications
+	- [ ] update/upgrade
+		- [ ] update system deps
 	- [ ] execute HeWo
 
 ## Low Priority
