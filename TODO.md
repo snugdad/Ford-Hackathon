@@ -1,7 +1,7 @@
 # TODO
 
 ## High Priority :
-- [ ] package demo app "Hello World"(HeWo)
+ - [ ] package demo app "Hello World"(HeWo)
 
  - [ ] webserver
 	- [ ] serverside security verification
@@ -19,6 +19,5 @@
 	- [ ] execute HeWo
 
 ## Low Priority
-
-	- [ ] GUI
-	- [ ] attempt mailicious code execution
+ - [ ] GUI
+ - [ ] attempt mailicious code execution
