@@ -4,10 +4,15 @@
  - [ ] package demo app "Hello World"(HeWo)
 
  - [ ] webserver
+ 	- [ ] API
+		- [ ] connects to redis
+		- [x] connects to mysql
+		- [ ] connects to client
+		- [ ] client GET from API
+			- [ ] data is valid
+			
 	- [ ] serverside security verification
 		- [ ] HMACs
-		//- [ ] check developer certs
-		//- [ ] (?) testing in dummy container
 
  - [ ] port from cloud to local device
 	- [ ] upload over HTTPS/SSL
