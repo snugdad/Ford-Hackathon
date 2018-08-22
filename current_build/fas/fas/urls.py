@@ -20,4 +20,5 @@ urlpatterns = [
   path('admin/', admin.site.urls),
   # path('api/', include('mynewapp.urls')),
   re_path('.*', TemplateView.as_view(template_name='index.html')),
+ # url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
