@@ -7,8 +7,8 @@
  	- [ ] API
 		- [ ] connects to redis
 		- [x] connects to mysql
-		- [ ] connects to client
-		- [ ] client GET from API
+		- [x] connects to client
+		- [x] client GET from API
 			- [ ] data is valid
 			
 	- [ ] serverside security verification
