@@ -1,0 +1,20 @@
+4 States of PDM (Project/Application Dependency Manager)
+
+> Project Code - Developed source code, under version control
+
+> Manifest file - Holds project metadata listing the depended upon packages to be managed
+    *  TOML/YAML plzplzplznoJSON kthx 
+    *   All project metadata is available to be cached in the pull registry and can be extracted via HTTPS/SSL API calls
+    *   Our project will only pull from one registry, the Ford one.
+    *   Filtration of garbage or malicious applications will take place at the registry level
+    *   We will limit the amount of commands within our package manager that change anything in our manifest file minus basic add/remove
+    *   Avoid static information and make the TOML file as dynamic as possible while still staying within the bounds of basic add/remove(be creative with these tools). We should have an update request to interface with the ford application registry that will dynamically update the installed, and package_store software manifests.
+    *   Ensure all units are encapsulated, with proper semantics and individual timelines (each dependency is tracked and monitored for error)
+     
+> Lock file - Contains all the information to reproduce the full dependency source tree
+
+> Dependency code - all source code named in lock file, arranged on disk such that the compiler/ interpreter
+                    will be able to find and use it as intended, but isolated so that nothing can mutate it
+        
+
+These 4 States form a pipline, with each stage providing the metadata for the next.

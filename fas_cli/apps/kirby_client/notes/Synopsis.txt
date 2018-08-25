@@ -1,0 +1,50 @@
+Limits:
+    O
+
+
+Problem:
+    Ford motors would like a system for fast delivery of applications from a secure repository. 
+
+
+
+Key Learning Points
+*   The foremost question is to clarify if we are making a package manager or a package manager manager. 
+*   Ask if we are going to need SPM, LPM, or PDM: This document currently assumes PDM as it is the most logical route (but wtf do i know).  
+
+*   Find out how they are doing filtration for malicious applications. There are several functionality features that need to be considered. 
+    > Potential Solutions
+        * Strict filtration and bug/malicious code checks at Submission to Fords repository
+            - Require that the app pass certain functionality restrictions restraining its ability to control anything other than what is required for the app (permissions)
+            - Performance within the bounds of available system resources at run time 
+            - Rigorous inspection for memory violations or undefined behavior
+        * Hardware segregation and segmented memory/os
+            - Package can run as a peripheral to the main system as a stand alone process
+            or Package can be placed on its own cpu/physical device and interface with the main control system through restricted channels
+        * Package manager itself will run a light subroutine of the error checking done, with focus on the specific vehicle and it's available subsystems
+
+*   Inquire their versioning schema and how they develop their software as a team, as well as any subversioning they may perform as part of their network/registry datatabase.
+
+*     
+            
+
+Solution:
+    Language: 
+            Go : reasons :: go NATIVELY contains all of the tools needed for package management. 
+            This will reduce storage and dependency bloat from exterior package management utilities
+            
+            Python: reasons :: Python can be lightweight and was hinted as the preferred language choice of ford. For now, we will assume Python as it seems to be the language we are all most familiar with
+
++---------+
+| Vehicle |
++---------+
+    | 
+    V
++----------+
+| Request  |
++----------+
+    |
+    V
++-----------+
+| Repository| verified
+|    API    |---------->
++-----------+ message

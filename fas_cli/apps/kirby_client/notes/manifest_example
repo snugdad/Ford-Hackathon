@@ -1,0 +1,42 @@
+
+
+# The package group is for the central registry it contains the information about how to get the desired application
+[package] 
+name = "ford_verified_application"
+version = "0.2.6"
+description = "An application to be run on fords embedded system"
+readme = "README.md"
+repository = "https://ford_example_registry/company/repo"
+documentation = "http://applicationdocs.io"
+license = "MIT"
+authors = [
+    "", # privacy: redacted
+]
+
+[lib]
+name = "atomic_library_substituent"
+path = "src/path_to_name"
+
+[features]
+default = ["ssl"]
+ssl = ["hyper/ssl"]
+
+#identifier=version specifier pairs. All identifiers must be within the same namespace. Good practice is to ensure package identifiers here have the same name as used to reference them in code
+e.g.(#include <stdio.h> in c)
+[dependencies]
+typemap = "0.3"
+url = "0.5"
+plugin = "0.2*"
+modifier = "0.1"
+error = "0.1"
+log = "0.3"
+conduit-mime-types = "0.7"
+lazy_static = "0.1"
+num_cpus = "0.2"
+
+[dependencies.hyper]
+version = "0.7"
+default-features = false
+
+[dev-dependencies]
+time = "*"
