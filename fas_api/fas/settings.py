@@ -24,7 +24,7 @@ SECRET_KEY = os.environ['FAS_SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['fas.42king.com']
+ALLOWED_HOSTS = ['fas.42king.com', '127.0.0.1']
 
 
 # Application definition
@@ -86,11 +86,11 @@ WSGI_APPLICATION = 'fas.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE'    : 'django.db.backends.mysql',
-        'NAME'      : os.environ['FAS_DB_NAME'],#'ford',
-        'USER'      : os.environ['FAS_DB_USER'],#'test',
-        'PASSWORD'  : os.environ['FAS_DB_PASS'],#'!FordKnowledgeIsPower42!',
-        'HOST'      : os.environ['FAS_DB_HOST'],#'localhost',
-        'PORT'      : os.environ['FAS_DB_PORT'],#'3306',
+        'NAME'      : os.environ['FAS_DB_NAME'],
+        'USER'      : os.environ['FAS_DB_USER'],
+        'PASSWORD'  : os.environ['FAS_DB_PASS'],
+        'HOST'      : os.environ['FAS_DB_HOST'],
+        'PORT'      : os.environ['FAS_DB_PORT'],
     }
 }
 
@@ -144,6 +144,10 @@ APP_URL = '/apps/'
 
 APP_ROOT = os.path.join(BASE_DIR, './app_upload' + APP_URL)
 
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'testing@example.com'
 EMAIL_HOST_USER = ''
@@ -151,3 +155,4 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 LOGIN_REDIRECT_URL = "home"
 LOGIN_URL = '/accounts/login/'
+
