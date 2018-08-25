@@ -102,7 +102,7 @@ def list_apps(opt, client, schema):
             print(formHeader())
             response = requests.request(
                             method='GET',
-                            url='http://fas.42king.com:8197/api/apps/',
+                            url='http://fas.42king.com/api/apps',
                             headers=formHeader()
                         )
             appList = json.loads(response.content)
@@ -129,9 +129,12 @@ def list_apps(opt, client, schema):
 def install(app, client, schema):
     print(schema)
     result = client.action(schema, keys=['download', 'read'], params={'path':app})
-    #response = client.get('http://fas.42king.com:8197/api/download/' + result)
+    #response = client.get('http://fas.42king.com/api/download/' + result)
     print(result)
 #    sys.exit(1)
+    
+    # TODO : unhash/verify
+
     zip_ref = zipfile.ZipFile(result, 'r')
     zip_ref.extractall('./apps/' + app)
     zip_ref.close()
@@ -151,7 +154,7 @@ def run_client():
     t = True
     client = coreapi.Client()
     try:
-        schema = client.get('http://fas.42king.com:8197/api/schema')
+        schema = client.get('https://fas.42king.com/api/schema')
         print('Welcome to Krby CLI Client!')
         display(None, None, None)
     except Exception as e:
@@ -170,14 +173,14 @@ def run_client():
         elif isinstance(result, dict):
             print('client updated with auth')
             client = result['client']
-            schema = client.get('http://fas.42king.com:8197/api/schema')
+            schema = client.get('https://fas.42king.com/api/schema')
         elif result == 'exit':
             t = False
     print('Goodbye!')
 
 def test_client_connection():
     client = coreapi.Client()
-    schema = client.get('http://fas.42king.com:8197/api/schema/')
+    schema = client.get('http://fas.42king.com/api/schema/')
     action = ['token', 'create']
     params = {'username': "test", 'password': 'test'}
     result = client.action(schema, action, params)
@@ -191,7 +194,7 @@ def test_client_connection():
     result = client.action(schema, action, params)
     print(result)
     clent = coreapi.Client(auth=auth)
-    print(client.get('http://fas.42king.com:8197/api/apps/'))
+    print(client.get('http://fas.42king.com/api/apps/'))
 
 
 func = {
