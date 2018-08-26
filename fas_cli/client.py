@@ -115,7 +115,7 @@ def list_apps(opt, client, schema):
                         )
             print('\n' * 5)
             print(response.content)
-            appList = json.loads(response.content)
+            appList = json.loads(response.content.decode('utf-8'))
             status = appList['status']
             print(status)
             print('\n' * 5)
