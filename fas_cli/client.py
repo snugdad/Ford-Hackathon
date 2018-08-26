@@ -116,11 +116,13 @@ def list_apps(opt, client, schema):
             print('\n' * 5)
             print(response.content)
             appList = json.loads(response.content)
+            status = appList['status']
+            print(status)
             print('\n' * 5)
             print(appList)
             appList = json.loads(appList['apps'])
 #            for key in appList: print (key)
-            if appList:
+            if status == 'request was permitted':
                 try:
                     print('Apps:')
                     for app in appList:
