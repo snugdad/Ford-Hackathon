@@ -5,6 +5,7 @@ import coreapi
 import getpass
 import zipfile
 import requests
+import subprocess
 from coreapi import codecs, Client
 
 SESSION_TOKEN=None
@@ -112,7 +113,11 @@ def list_apps(opt, client, schema):
                             url='https://fas.42king.com/api/apps',
                             headers=formHeader()
                         )
+            print('\n' * 5)
+            print(response.content)
             appList = json.loads(response.content)
+            print('\n' * 5)
+            print(appList)
             appList = json.loads(appList['apps'])
 #            for key in appList: print (key)
             if appList:
@@ -133,14 +138,36 @@ def list_apps(opt, client, schema):
         return True
 
 def install(app, client, schema):
-    result = client.action(schema, keys=['download', 'read'], params={'path':app})
-    
+    response = requests.request(
+                            method='GET',
+                            url='https://fas.42king.com/api/download/' + app,
+                            headers=formHeader()
+                        )
+    cType = response.headers.get('content-type')
+    if cType == 'application/json':
+        result = json.loads(response.content)
+
+        if 'detail' in result:
+            if result['detail'] == 'Invalid token.':
+                print('not authorized')
+                return False
+        else:
+            print(result)
+    elif cType == 'application/zip':
+        try:
+            with open('./apps/'+app+'/'+app+'.zip', 'wb') as fd:
+                for chunk in response.iter_content(chunk_size=128):
+                    fd.write(chunk)
+
     # TODO : unhash/verify
 
-    zip_ref = zipfile.ZipFile(result, 'r')
-    zip_ref.extractall('./apps/' + app)
-    zip_ref.close()
-    subprocess.run('pip3 install -r', './apps/' + app + '/' + 'requirements.txt')
+            zip_ref = zipfile.ZipFile('./apps/'+app+'/'+app+'.zip', 'r')
+            zip_ref.extractall('./apps/' + app)
+            zip_ref.close()
+        except Exception as e:
+            print(e)
+            print('application could not be installed')
+    #subprocess.run('pip3 install -r', './apps/' + app + '/' + 'requirements.txt')
     while True:
             print('would you like to install another app?:')
             list_apps(None, client, schema)
