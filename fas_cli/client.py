@@ -18,6 +18,7 @@ def display(opt, client, schema):
         login - login with <username>, <password>\n\
         list - lists all apps\n\
         install <app> - install an app from the list of apps\n\
+        logout - log user out\n\
         help - list options\n\
         quit - exit client')
     return True
@@ -62,8 +63,10 @@ def register(opt, client, schema):
 
 def logout(opt, client, schema):
     global SESSION_TOKEN
-    print(schema)
-    client.action
+    client.action(schema, keys=['logout', 'create'])
+    SESSION_TOKEN = None
+    print('user logged out')
+    return True
 
 def login(opt, client, schema):
     while True:
