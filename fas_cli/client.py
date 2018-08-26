@@ -18,6 +18,7 @@ def display(opt, client, schema):
         login - login with <username>, <password>\n\
         list - lists all apps\n\
         install <app> - install an app from the list of apps\n\
+        logout - log user out\n\
         help - list options\n\
         quit - exit client')
     return True
@@ -55,9 +56,16 @@ def register(opt, client, schema):
                         }
                     )
     except Exception as e:
-        print(e)
+#        print(e)
         return False
     print('user registered')
+    return True
+
+def logout(opt, client, schema):
+    global SESSION_TOKEN
+    client.action(schema, keys=['logout', 'create'])
+    SESSION_TOKEN = None
+    print('user logged out')
     return True
 
 def login(opt, client, schema):
@@ -77,12 +85,11 @@ def login(opt, client, schema):
         result = client.action(schema, action, params)
         print(formHeader())
     except Exception as e:
-        print(e)
+#        print(e)
         print('validation failed')
         return False
     global SESSION_TOKEN
     SESSION_TOKEN = result['token']
-    print(SESSION_TOKEN, formHeader())
     auth = coreapi.auth.TokenAuthentication(
         scheme='OAUTH',
         token=SESSION_TOKEN
@@ -92,17 +99,15 @@ def login(opt, client, schema):
     return True#{'client':client}
 
 def list_apps(opt, client, schema):
-#    print(client.auth)
     if opt == 'installed':
         for file in next(os.walk('./apps/'))[1]:
             print(file)
         return True
     elif opt == 'all' or not opt:
         try:
-            print(formHeader())
             response = requests.request(
                             method='GET',
-                            url='http://fas.42king.com:8197/api/apps/',
+                            url='http://fas.42king.com/api/apps',
                             headers=formHeader()
                         )
             appList = json.loads(response.content)
@@ -112,14 +117,13 @@ def list_apps(opt, client, schema):
                 try:
                     print('Apps:')
                     for app in appList:
-#                        print(app)
                         print('\t' + app['fields']['name'])
                 except Exception as e:
-                    print(e)
+#                    print(e)
                     print('apps could not be displayed')
                     return False
         except Exception as e:
-            print(e)
+#            print(e)
             print('not authorized')
             return False
     else:
@@ -127,15 +131,13 @@ def list_apps(opt, client, schema):
         return True
 
 def install(app, client, schema):
-    print(schema)
     result = client.action(schema, keys=['download', 'read'], params={'path':app})
-    #response = client.get('http://fas.42king.com:8197/api/download/' + result)
-    print(result)
-#    sys.exit(1)
+    
+    # TODO : unhash/verify
+
     zip_ref = zipfile.ZipFile(result, 'r')
     zip_ref.extractall('./apps/' + app)
     zip_ref.close()
-    print(result)
     while True:
             print('would you like to install another app?:')
             list_apps(None, client, schema)
@@ -151,11 +153,11 @@ def run_client():
     t = True
     client = coreapi.Client()
     try:
-        schema = client.get('http://fas.42king.com:8197/api/schema')
+        schema = client.get('https://fas.42king.com/api/schema')
         print('Welcome to Krby CLI Client!')
         display(None, None, None)
     except Exception as e:
-        print(e)
+#        print(e)
         print('server down for maintenence')
         t = False
     result = None
@@ -170,14 +172,14 @@ def run_client():
         elif isinstance(result, dict):
             print('client updated with auth')
             client = result['client']
-            schema = client.get('http://fas.42king.com:8197/api/schema')
+            schema = client.get('https://fas.42king.com/api/schema')
         elif result == 'exit':
             t = False
     print('Goodbye!')
 
 def test_client_connection():
     client = coreapi.Client()
-    schema = client.get('http://fas.42king.com:8197/api/schema/')
+    schema = client.get('http://fas.42king.com/api/schema/')
     action = ['token', 'create']
     params = {'username': "test", 'password': 'test'}
     result = client.action(schema, action, params)
@@ -191,7 +193,7 @@ def test_client_connection():
     result = client.action(schema, action, params)
     print(result)
     clent = coreapi.Client(auth=auth)
-    print(client.get('http://fas.42king.com:8197/api/apps/'))
+    print(client.get('http://fas.42king.com/api/apps/'))
 
 
 func = {
@@ -201,6 +203,7 @@ func = {
         'install'   :install,
         'help'      :display,
         'quit'      :quit,
+        'logout'    :logout,
 }
 
 if __name__ == "__main__":
