@@ -4,9 +4,13 @@ cd fas_api
 vi config.sh
 ```
 
-set your environment variables here like:
+install python dependencies andset your environment variables in config.sh like:
 
 ```
+pip3 install -r requirements.txt
+
+...
+
 export FAS_DB_USER='<username>'
 ```
 
