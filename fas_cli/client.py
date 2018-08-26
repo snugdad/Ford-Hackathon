@@ -63,6 +63,9 @@ def register(opt, client, schema):
 
 def logout(opt, client, schema):
     global SESSION_TOKEN
+    if not SESSION_TOKEN:
+        print('no user logged in')
+        return True
     client.action(schema, keys=['logout', 'create'])
     SESSION_TOKEN = None
     print('user logged out')
@@ -83,7 +86,6 @@ def login(opt, client, schema):
         result = client.action(schema, action, params)
         action = ['token', 'create']
         result = client.action(schema, action, params)
-        print(formHeader())
     except Exception as e:
 #        print(e)
         print('validation failed')
