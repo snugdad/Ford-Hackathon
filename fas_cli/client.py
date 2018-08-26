@@ -109,7 +109,7 @@ def list_apps(opt, client, schema):
         try:
             response = requests.request(
                             method='GET',
-                            url='http://fas.42king.com/api/apps',
+                            url='https://fas.42king.com/api/apps',
                             headers=formHeader()
                         )
             appList = json.loads(response.content)
@@ -140,6 +140,7 @@ def install(app, client, schema):
     zip_ref = zipfile.ZipFile(result, 'r')
     zip_ref.extractall('./apps/' + app)
     zip_ref.close()
+    subprocess.run('pip3 install -r', './apps/' + app + '/' + 'requirements.txt')
     while True:
             print('would you like to install another app?:')
             list_apps(None, client, schema)
