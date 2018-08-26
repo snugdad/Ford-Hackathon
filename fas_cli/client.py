@@ -60,6 +60,11 @@ def register(opt, client, schema):
     print('user registered')
     return True
 
+def logout(opt, client, schema):
+    global SESSION_TOKEN
+    print(schema)
+    client.action
+
 def login(opt, client, schema):
     while True:
         username = input('username:')
@@ -195,6 +200,7 @@ func = {
         'install'   :install,
         'help'      :display,
         'quit'      :quit,
+        'logout'    :logout,
 }
 
 if __name__ == "__main__":
