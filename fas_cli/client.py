@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import shutil
@@ -6,6 +7,7 @@ import getpass
 import zipfile
 import requests
 import subprocess
+from hashit import hash_dir
 from coreapi import codecs, Client
 
 SESSION_TOKEN=None
@@ -88,7 +90,7 @@ def login(opt, client, schema):
         action = ['token', 'create']
         result = client.action(schema, action, params)
     except Exception as e:
-#        print(e)
+        print(e)
         print('validation failed')
         return False
     global SESSION_TOKEN
@@ -113,13 +115,10 @@ def list_apps(opt, client, schema):
                             url='https://fas.42king.com/api/apps',
                             headers=formHeader()
                         )
-            print('\n' * 5)
-            print(response.content)
+#            print(response.content)
             appList = json.loads(response.content.decode('utf-8'))
             status = appList['status']
-            print(status)
-            print('\n' * 5)
-            print(appList)
+#            print(status)
             appList = json.loads(appList['apps'])
 #            for key in appList: print (key)
             if status == 'request was permitted':
@@ -140,12 +139,16 @@ def list_apps(opt, client, schema):
         return True
 
 def install(app, client, schema):
+    if not app:
+        print('please type an app name')
+        return list_apps(None, client, schema)
     response = requests.request(
                             method='GET',
                             url='https://fas.42king.com/api/download/' + app,
                             headers=formHeader()
                         )
     cType = response.headers.get('content-type')
+    print(cType)
     if cType == 'application/json':
         result = json.loads(response.content)
 
@@ -153,22 +156,39 @@ def install(app, client, schema):
             if result['detail'] == 'Invalid token.':
                 print('not authorized')
                 return False
-        else:
-            print(result)
+            elif result['detail'] == 'Not found.':
+                print('app does not exist')
+                return False
     elif cType == 'application/zip':
+        print(response.content)
+        ha = None
         try:
-            with open('./apps/'+app+'.zip', 'wb+') as fd:
+            insp = './apps/'+app+'.zip' # install path
+            print(insp)
+            with open(insp, 'wb+') as fd:
                 for chunk in response.iter_content(chunk_size=128):
                     fd.write(chunk)
+            
+            # TODO : unhash/verify
 
-    # TODO : unhash/verify
-
-            zip_ref = zipfile.ZipFile('./apps/'+app+'.zip', 'r')
-            zip_ref.extractall('./apps/' + app)
+            zip_ref = zipfile.ZipFile(insp, 'r')
+            zip_ref.extractall('./apps/'+app+'/')
             zip_ref.close()
+            for file in os.listdir('./apps/'+app):
+                print (file)
+                if '.zip' in file and app in file:
+                    ha = file.split('.')[1]
+            os.remove(insp)
+            os.remove('./apps/'+app+'/'+app+'.'+ha+'.zip')
+            match_ha = hash_dir('./apps/'+app) 
+            print(match_ha)
+            if match_ha != ha:
+                print('ha no match')
+                return False
         except Exception as e:
             print(e)
             print('application could not be installed')
+            return True
     print(app+' installed under ./apps/ '+app)
     #subprocess.run('pip3 install -r', './apps/' + app + '/' + 'requirements.txt')
 
