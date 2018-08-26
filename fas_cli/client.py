@@ -157,29 +157,20 @@ def install(app, client, schema):
             print(result)
     elif cType == 'application/zip':
         try:
-            with open('./apps/'+app+'/'+app+'.zip', 'wb') as fd:
+            with open('./apps/'+app+'.zip', 'wb+') as fd:
                 for chunk in response.iter_content(chunk_size=128):
                     fd.write(chunk)
 
     # TODO : unhash/verify
 
-            zip_ref = zipfile.ZipFile('./apps/'+app+'/'+app+'.zip', 'r')
+            zip_ref = zipfile.ZipFile('./apps/'+app+'.zip', 'r')
             zip_ref.extractall('./apps/' + app)
             zip_ref.close()
         except Exception as e:
             print(e)
             print('application could not be installed')
+    print(app+' installed under ./apps/ '+app)
     #subprocess.run('pip3 install -r', './apps/' + app + '/' + 'requirements.txt')
-    while True:
-            print('would you like to install another app?:')
-            list_apps(None, client, schema)
-            yano = input('[ya\\\\no]: ')
-            if 'y' in yano:
-                continue
-            elif 'n' in yano:
-                break
-            else:
-                print('incorrect (input == [\'ya\', \'no\'])')
 
 def run_client():
     t = True
