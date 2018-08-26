@@ -53,7 +53,9 @@ def get_man_schema(opt=None):
                                 ),
                         ],
                         encoding="application/json",
-                )	
+                )
+    elif opt == 'logout':
+       pass
     return ManualSchema(
                         fields=[
                                 coreapi.Field(
