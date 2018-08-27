@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import shutil
@@ -5,6 +6,8 @@ import coreapi
 import getpass
 import zipfile
 import requests
+import subprocess
+from hashit import hash_dir
 from coreapi import codecs, Client
 
 SESSION_TOKEN=None
@@ -87,7 +90,7 @@ def login(opt, client, schema):
         action = ['token', 'create']
         result = client.action(schema, action, params)
     except Exception as e:
-#        print(e)
+        print(e)
         print('validation failed')
         return False
     global SESSION_TOKEN
@@ -109,13 +112,16 @@ def list_apps(opt, client, schema):
         try:
             response = requests.request(
                             method='GET',
-                            url='http://fas.42king.com/api/apps',
+                            url='https://fas.42king.com/api/apps',
                             headers=formHeader()
                         )
-            appList = json.loads(response.content)
+#            print(response.content)
+            appList = json.loads(response.content.decode('utf-8'))
+            status = appList['status']
+#            print(status)
             appList = json.loads(appList['apps'])
 #            for key in appList: print (key)
-            if appList:
+            if status == 'request was permitted':
                 try:
                     print('Apps:')
                     for app in appList:
@@ -133,23 +139,63 @@ def list_apps(opt, client, schema):
         return True
 
 def install(app, client, schema):
-    result = client.action(schema, keys=['download', 'read'], params={'path':app})
-    
-    # TODO : unhash/verify
+    if not app:
+        print('please type an app name')
+        return list_apps(None, client, schema)
+    response = requests.request(
+                            method='GET',
+                            url='https://fas.42king.com/api/download/' + app,
+                            headers=formHeader()
+                        )
+    cType = response.headers.get('content-type')
+    print(cType)
+    if cType == 'application/json':
+        result = json.loads(response.content)
 
-    zip_ref = zipfile.ZipFile(result, 'r')
-    zip_ref.extractall('./apps/' + app)
-    zip_ref.close()
-    while True:
-            print('would you like to install another app?:')
-            list_apps(None, client, schema)
-            yano = input('[ya\\\\no]: ')
-            if 'y' in yano:
-                continue
-            elif 'n' in yano:
-                break
-            else:
-                print('incorrect (input == [\'ya\', \'no\'])')
+        if 'detail' in result:
+            if result['detail'] == 'Invalid token.':
+                print('not authorized')
+                return False
+            elif result['detail'] == 'Not found.':
+                print('app does not exist')
+                return False
+    elif cType == 'application/zip':
+        print(response.content)
+        ha = None
+        try:
+            insp = './apps/'+app+'.zip' # install path
+            print(insp)
+            with open(insp, 'wb+') as fd:
+                for chunk in response.iter_content(chunk_size=128):
+                    fd.write(chunk)
+            
+            # TODO : unhash/verify
+
+            try:
+                zip_ref = zipfile.ZipFile(insp, 'r')
+                zip_ref.extractall('./apps/'+app+'/')
+                zip_ref.close()
+            except Exception as e:
+                print(e)
+                print('fuk')
+            for file in os.listdir('./apps/'+app):
+                print (file)
+                if '.zip' in file and app in file:
+                    ha = file.split('.')[1]
+            print('HA==',ha)
+            os.remove(insp)
+            os.remove('./apps/'+app+'/'+app+'.'+ha+'.zip')
+            match_ha = hash_dir('./apps/'+app) 
+            print(match_ha)
+            if match_ha != ha:
+                print('ha no match')
+                return False
+        except Exception as e:
+            print(e)
+            print('application could not be installed')
+            return True
+    print(app+' installed under ./apps/ '+app)
+    #subprocess.run('pip3 install -r', './apps/' + app + '/' + 'requirements.txt')
 
 def run_client():
     t = True
