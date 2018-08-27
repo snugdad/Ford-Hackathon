@@ -21,19 +21,19 @@ def display(opt, client, schema):
         login - login with <username>, <password>\n\
         list - lists all apps\n\
         install <app>   - install an app from the list of apps\n\
-        run     <app>   - run an installed app\n\
         logout          - log user out\n\
         help            - list options\n\
         quit - exit client')
+#        run     <app>   - run an installed app\n\
     return True
 
 def formHeader():
     global SESSION_TOKEN
     return {'Authorization': 'Token {}'.format(SESSION_TOKEN)}
 
-def run(app, client, schema):
-    print(os.system('sh ./apps/'+app+'/run.sh'))
-    return True
+#def run(app, client, schema):
+#    print(os.system('sh ./apps/'+app+'/run.sh'))
+#    return True
 
 def register(opt, client, schema):
     while True:
@@ -80,6 +80,10 @@ def logout(opt, client, schema):
     return True
 
 def login(opt, client, schema):
+    global SESSION_TOKEN
+    if SESSION_TOKEN:
+        print('user already logged in')
+        return True
     while True:
         username = input('username:')
         password = getpass.getpass('password:')
@@ -98,7 +102,6 @@ def login(opt, client, schema):
 #        print(e)
         print('validation failed')
         return False
-    global SESSION_TOKEN
     SESSION_TOKEN = result['token']
     auth = coreapi.auth.TokenAuthentication(
         scheme='OAUTH',
@@ -106,7 +109,7 @@ def login(opt, client, schema):
     )
     client = coreapi.Client(auth=auth)
     print(username + ' logged in')
-    return True#{'client':client}
+    return True
 
 def list_apps(opt, client, schema):
     if opt == 'installed':
@@ -189,6 +192,7 @@ def install(app, client, schema):
                 zip_ref.extractall('./apps/'+app+'/')
                 zip_ref.close()
                 os.remove(insp)
+                os.remove('./apps/'+app+'/'+app+'.zip')
                 os.system('pip3 install -r ./apps/'+app+'/requirements.txt')
                 os.system('source ./apps/'+app+'/config.sh')
             except Exception as e:
