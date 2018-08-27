@@ -194,7 +194,7 @@ def install(app, client, schema):
                 os.remove(insp)
                 os.remove('./apps/'+app+'/'+app+'.zip')
                 os.system('pip3 install -r ./apps/'+app+'/requirements.txt')
-                os.system('source ./apps/'+app+'/config.sh')
+#                os.system('source ./apps/'+app+'/config.sh')
             except Exception as e:
                 print(e)
                 print('file decoding failed')
