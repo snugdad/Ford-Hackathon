@@ -31,6 +31,7 @@ def get_man_schema(opt=None):
     '''
     # TODO : make this function obsolete
     if opt == 'login':
+          print('DUCK')
           return ManualSchema(
                         fields=[
                                 coreapi.Field(

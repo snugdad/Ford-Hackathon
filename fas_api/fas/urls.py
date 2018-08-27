@@ -19,9 +19,8 @@ from django.views.generic import TemplateView
 from django.conf.urls import url, include, static
 
 urlpatterns = [
-	url(r'^admin/', admin.site.urls),
-	url(r'^$', views.index, name='home'),
-	url(r'^accounts/', include('registration.backends.simple.urls')),
+	url(r'home', views.HomePage.as_view()),
+#	url(r'^accounts', include('registration.backends.simple.urls')),
 	url(r'^', include('fas_backend.urls')),
 	url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider'))
 ]

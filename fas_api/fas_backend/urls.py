@@ -1,7 +1,7 @@
 from fas_backend import views
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
-from django.urls import include
+from django.urls import include, path
 from django.contrib import admin
 from django.conf import settings
 from django.views.static import serve
@@ -29,5 +29,4 @@ urlpatterns = [
 	# TODO : etc
 ]
 
-urlpatterns = format_suffix_patterns(urlpatterns)
-
+#urlpatterns = format_suffix_patterns(urlpatterns)
