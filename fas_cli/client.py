@@ -298,5 +298,5 @@ if __name__ == "__main__":
     except:
         pass
     finally:
-        global SESSION_TOKEN
+        # global SESSION_TOKEN
         SESSION_TOKEN = None
