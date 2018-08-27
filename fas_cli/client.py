@@ -256,7 +256,7 @@ func = {
         'login'     :login,
         'list'      :list_apps,
         'install'   :install,
-        'run'       :run,
+#        'run'       :run,
         'help'      :display,
         'quit'      :quit,
         'logout'    :logout,
