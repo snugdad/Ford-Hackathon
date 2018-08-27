@@ -7,7 +7,7 @@ import getpass
 import zipfile
 import requests
 import subprocess
-from hashit import hash_file
+from hashit import hmac_sec
 from coreapi import codecs, Client
 
 SESSION_TOKEN=None
@@ -20,15 +20,20 @@ def display(opt, client, schema):
         register - register a new user\n\
         login - login with <username>, <password>\n\
         list - lists all apps\n\
-        install <app> - install an app from the list of apps\n\
-        logout - log user out\n\
-        help - list options\n\
+        install <app>   - install an app from the list of apps\n\
+        run     <app>   - run an installed app\n\
+        logout          - log user out\n\
+        help            - list options\n\
         quit - exit client')
     return True
 
 def formHeader():
     global SESSION_TOKEN
     return {'Authorization': 'Token {}'.format(SESSION_TOKEN)}
+
+def run(app, client, schema):
+    print(os.system('sh ./apps/'+app+'/run.sh'))
+    return True
 
 def register(opt, client, schema):
     while True:
@@ -148,7 +153,7 @@ def install(app, client, schema):
                             headers=formHeader()
                         )
     cType = response.headers.get('content-type')
-    print(cType)
+#    print(cType)
     if cType == 'application/json':
         result = json.loads(response.content)
 
@@ -161,11 +166,9 @@ def install(app, client, schema):
                 return False
     elif cType == 'application/zip':
         try:
-            print(response.headers)
+#            print(response.headers)
             filename = response.headers['Content-Disposition']
-            print(filename)
             ha = filename.split('=')[1].split('.')[1]
-            print('HA==',ha)
         except Exception as e:
 #            print(e)
             return False
@@ -175,8 +178,10 @@ def install(app, client, schema):
                 for chunk in response.iter_content(chunk_size=128):
                     fd.write(chunk)
             try:
-                match_ha = hash_file(insp)
-                print(match_ha, ha)
+                barr = open(insp, 'rb').read() # bytes array
+                # HMAC verified with user's token
+                match_ha = hmac_sec(SESSION_TOKEN.encode(encoding='UTF-8'), barr)
+#                print(match_ha, ha)
                 if match_ha != ha:
                     print('unverified files, do not open')
                     return False
@@ -184,15 +189,16 @@ def install(app, client, schema):
                 zip_ref.extractall('./apps/'+app+'/')
                 zip_ref.close()
                 os.remove(insp)
+                os.system('pip3 install -r ./apps/'+app+'/requirements.txt')
+                os.system('source ./apps/'+app+'/config.sh')
             except Exception as e:
                 print(e)
-                print('oops')
+                print('file decoding failed')
         except Exception as e:
             print(e)
             print('application could not be installed')
             return True
     print(app+' installed under ./apps/ '+app)
-    #subprocess.run('pip3 install -r', './apps/' + app + '/' + 'requirements.txt')
 
 def run_client():
     t = True
@@ -246,6 +252,7 @@ func = {
         'login'     :login,
         'list'      :list_apps,
         'install'   :install,
+        'run'       :run,
         'help'      :display,
         'quit'      :quit,
         'logout'    :logout,
