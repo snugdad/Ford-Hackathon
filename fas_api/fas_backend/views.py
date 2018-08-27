@@ -3,7 +3,7 @@ import shutil
 import zipfile
 
 from fas_backend.models import FasApp, FasUser
-from fas_backend.hashit import hash_file, zipdir
+from app_upload.hashit import hash_file, hmac_sec
 from fas_backend.serializers import FasAppSerializer, FasUserSerializer
 from fas_backend.permissions import IsOwnerOrReadOnly, getPermit, get_man_schema
 
@@ -80,6 +80,9 @@ class Download(APIView, TemplateView):
 		)
 
 	def get(self, request, path, format=None):
+		secret = ''
+		if request.auth:
+			secret = request.auth.key.encode(encoding='UTF-8')
 		file_path = os.path.join(settings.APP_ROOT, path+'/')
 		# if path in cache
 		app = cache.get(path)
@@ -87,15 +90,17 @@ class Download(APIView, TemplateView):
 			app = FasApp.objects.filter(name=path)
 			cache.set(path, app, timeout=CACHE_TTL)
 		if os.path.exists(file_path) and app:
-#			ha = hash_file(file_path)
-			tru_path = 'app_upload/apps/'+path+'/'+path
+			tru_path = 'app_upload/apps/'+path+'/'+path#+ha+'.'
 			shutil.make_archive(tru_path, 'zip', file_path)
 
-			ha = hash_file(file_path)
+			barr = open(tru_path+'.zip', "rb").read() # byte array
+			ha = hmac_sec(secret, barr)
+#			ha = hash_file(file_path)
 
 			with open(tru_path+'.zip', 'rb') as fh:
 				response = HttpResponse(fh.read(), content_type="application/zip")
-				response['Content-Disposition'] = 'inline; filename='+path
+				response['Content-Disposition'] = 'inline; filename='+path+'.'+ha+'.zip'
+#				response.write('hash':ha)
 			os.remove(tru_path+'.zip')
 			return response
 		raise Http404
@@ -162,7 +167,6 @@ class HomePage(TemplateView):
 @api_view
 @renderer_classes([renderers.CoreJSONRenderer])
 def schema_view(request):
-	print('danke memes')
 	generator = SchemaGenerator(
 			title='Fas API',
 			url='https://fas.42king.com/api/schema',

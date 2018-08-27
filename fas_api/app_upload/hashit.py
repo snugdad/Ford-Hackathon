@@ -1,5 +1,10 @@
 import os
 import hmac
+import hashlib
+
+def hmac_sec(secret, message):
+	result = hmac.new(secret, message, hashlib.sha256).hexdigest()
+	return result
 
 def hmac_for_file(filename, block_size=2**20):
     hmc = hmac.new(bytes('the shared secret key here', 'utf-8'))
@@ -19,6 +24,13 @@ def hmacOfFile(filepath):
             if not block: break
             md.update(block)
         return md.hexdigest()
+
+def hash_file(filename, block_size=65536):
+   sha256 = hashlib.sha256()
+   with open(filename, 'rb') as f:
+       for block in iter(lambda: f.read(block_size), b''):
+           sha256.update(block)
+   return sha256.hexdigest()
 
 def hash_dir(dir_path):
     hashes = []
