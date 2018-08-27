@@ -14,13 +14,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from fas_backend import views
+from django.conf import settings
 from django.contrib import admin
 from django.views.generic import TemplateView
-from django.conf.urls import url, include, static
+from rest_framework.urlpatterns import format_suffix_patterns
+from django.conf.urls import url, include
+from django.conf.urls.static import static
+from django.urls import include, path
 
 urlpatterns = [
-	url(r'home', views.HomePage.as_view()),
+	path('/', views.HomePage.as_view()),
+	path('', include('fas_backend.urls')),
+	path('home', views.HomePage.as_view(), name='index'),
 #	url(r'^accounts', include('registration.backends.simple.urls')),
-	url(r'^', include('fas_backend.urls')),
-	url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider'))
-]
+	path('o/', include('oauth2_provider.urls', namespace='oauth2_provider'))
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+#urlpatterns = format_suffix_patterns(urlpatterns)

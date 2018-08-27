@@ -3,7 +3,7 @@ import shutil
 import zipfile
 
 from fas_backend.models import FasApp, FasUser
-from fas_backend.hashit import hash_dir, zipdir
+from fas_backend.hashit import hash_file, zipdir
 from fas_backend.serializers import FasAppSerializer, FasUserSerializer
 from fas_backend.permissions import IsOwnerOrReadOnly, getPermit, get_man_schema
 
@@ -47,6 +47,25 @@ def download(request, path):
 			return response
 		raise Http404	
 '''
+class Upload(APIView, TemplateView):
+	template_name = 'upload.html'
+	
+	authentication_classes = (
+			authentication.TokenAuthentication,
+			authentication.SessionAuthentication
+		)
+
+	def post(self, request):
+		print(request.FILES)
+		if request.method == 'POST' and request.FILES['myfile']:
+			myfile = request.FILES['myfile']
+			fs = FileSystemStorage()
+			filename = fs.save(myfile.name, myfile)
+			uploaded_file_url = fs.url(filename)
+			return render(request, 'core/simple_upload.html', {
+							'uploaded_file_url': uploaded_file_url
+						})
+		return render(request, 'core/simple_upload.html')
 
 class Download(APIView, TemplateView):
 	'''
@@ -68,10 +87,12 @@ class Download(APIView, TemplateView):
 			app = FasApp.objects.filter(name=path)
 			cache.set(path, app, timeout=CACHE_TTL)
 		if os.path.exists(file_path) and app:
-			ha = hash_dir(file_path)
-			tru_path = 'app_upload/apps/'+path+'/'+path+'.'+ha
+#			ha = hash_file(file_path)
+			tru_path = 'app_upload/apps/'+path+'/'+path
 			shutil.make_archive(tru_path, 'zip', file_path)
-			
+
+			ha = hash_file(file_path)
+
 			with open(tru_path+'.zip', 'rb') as fh:
 				response = HttpResponse(fh.read(), content_type="application/zip")
 				response['Content-Disposition'] = 'inline; filename='+path
@@ -133,10 +154,10 @@ class HomePage(TemplateView):
 	'''
 	root index will change in future
 	'''
-	template_name = ('indexa.html')
+	template_name = ('home/index.html')
 
-	def get(request):
-		return render(request)
+	def get(self, request):
+		return render(request, self.template_name)
 
 @api_view
 @renderer_classes([renderers.CoreJSONRenderer])

@@ -14,6 +14,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+print(BASE_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -30,7 +31,7 @@ CACHE_TTL = 60 * 15
 
 # Application definition
 STATICFILES_DIRS = [
-  os.path.join(BASE_DIR, 'fas_frontend/assets'),
+  os.path.join(BASE_DIR, '/fas_frontend/app/assets'),
 ]
 
 INSTALLED_APPS = [
@@ -68,9 +69,11 @@ ROOT_URLCONF = 'fas.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-	'DIRS':['fas_frontend/app',
+	'DIRS':[
+		'fas_frontend/app/',
 #		'fas_frontend/app/login',
-		'fas_frontend/app/home'],
+#		'fas_frontend/app/home'
+	],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -156,13 +159,12 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/fas_frontend/app/'
 
 APP_URL = '/apps/'
 
-
-
 APP_ROOT = os.path.join(BASE_DIR, './app_upload' + APP_URL)
+STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL)
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
@@ -175,4 +177,4 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 LOGIN_REDIRECT_URL = "home"
 LOGIN_URL = '/accounts/login/'
-
+APPEND_SLASH = True
