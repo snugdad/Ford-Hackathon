@@ -7,7 +7,7 @@ import getpass
 import zipfile
 import requests
 import subprocess
-from hashit import hash_dir
+from hashit import hash_file
 from coreapi import codecs, Client
 
 SESSION_TOKEN=None
@@ -90,7 +90,7 @@ def login(opt, client, schema):
         action = ['token', 'create']
         result = client.action(schema, action, params)
     except Exception as e:
-        print(e)
+#        print(e)
         print('validation failed')
         return False
     global SESSION_TOKEN
@@ -160,36 +160,33 @@ def install(app, client, schema):
                 print('app does not exist')
                 return False
     elif cType == 'application/zip':
-        print(response.content)
-        ha = None
+        try:
+            print(response.headers)
+            filename = response.headers['Content-Disposition']
+            print(filename)
+            ha = filename.split('=')[1].split('.')[1]
+            print('HA==',ha)
+        except Exception as e:
+#            print(e)
+            return False
         try:
             insp = './apps/'+app+'.zip' # install path
-            print(insp)
             with open(insp, 'wb+') as fd:
                 for chunk in response.iter_content(chunk_size=128):
                     fd.write(chunk)
-            
-            # TODO : unhash/verify
-
             try:
+                match_ha = hash_file(insp)
+                print(match_ha, ha)
+                if match_ha != ha:
+                    print('unverified files, do not open')
+                    return False
                 zip_ref = zipfile.ZipFile(insp, 'r')
                 zip_ref.extractall('./apps/'+app+'/')
                 zip_ref.close()
+                os.remove(insp)
             except Exception as e:
                 print(e)
-                print('fuk')
-            for file in os.listdir('./apps/'+app):
-                print (file)
-                if '.zip' in file and app in file:
-                    ha = file.split('.')[1]
-            print('HA==',ha)
-            os.remove(insp)
-            os.remove('./apps/'+app+'/'+app+'.'+ha+'.zip')
-            match_ha = hash_dir('./apps/'+app) 
-            print(match_ha)
-            if match_ha != ha:
-                print('ha no match')
-                return False
+                print('oops')
         except Exception as e:
             print(e)
             print('application could not be installed')
