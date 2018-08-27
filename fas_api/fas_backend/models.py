@@ -12,7 +12,8 @@ class FasUser(AbstractUser):
 
         class Meta:
                 ordering = ('created',)
-                permissions = (('can_download', 'User can download media'),)
+                default_permissions = ()
+#                permissions = (('can_download', 'User can download media'),)
 
         def save(self, *args, **kwargs):
 #                permission = Permission.objects.get(
@@ -22,6 +23,15 @@ class FasUser(AbstractUser):
 #                )
 #                self.user_permissions.add(permission)
                 super(FasUser, self).save(*args, **kwargs)
+        def has_change_permission(self, request, obj=None):
+            if obj is not None and obj.created_by != request.user:
+                return False
+            return True
+
+        def has_delete_permission(self, request, obj=None):
+            if obj is not None and obj.created_by != request.user:
+                return False
+            return True
 
 class FasApp(models.Model):
 	id = models.AutoField(primary_key=True)
@@ -44,4 +54,3 @@ class FasApp(models.Model):
 		'''
 		fasusers = FasUser.objects.all()
 		super(FasApp, self).save(*args, **kwargs)
-

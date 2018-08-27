@@ -31,7 +31,6 @@ def get_man_schema(opt=None):
     '''
     # TODO : make this function obsolete
     if opt == 'login':
-          print('DUCK')
           return ManualSchema(
                         fields=[
                                 coreapi.Field(
@@ -55,8 +54,8 @@ def get_man_schema(opt=None):
                         ],
                         encoding="application/json",
                 )
-    elif opt == 'logout':
-       pass
+    elif opt == 'applist':
+                pass
     return ManualSchema(
                         fields=[
                                 coreapi.Field(

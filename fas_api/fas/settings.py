@@ -23,7 +23,7 @@ print(BASE_DIR)
 SECRET_KEY = os.environ['FAS_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['fas.42king.com', '127.0.0.1']
 

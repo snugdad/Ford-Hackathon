@@ -16,6 +16,8 @@ cache.clear()
 #from django.contrib.auth.models import User
 from django.http import HttpResponse, Http404
 from django.views.generic.base import TemplateView
+from django.views.generic.edit import FormView
+#rom .forms import FileFieldForm
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
@@ -47,25 +49,23 @@ def download(request, path):
 			return response
 		raise Http404	
 '''
-class Upload(APIView, TemplateView):
-	template_name = 'upload.html'
+class Upload(APIView, FormView):
+#	template_name = 'upload.html'
 	
 	authentication_classes = (
 			authentication.TokenAuthentication,
 			authentication.SessionAuthentication
 		)
-
-	def post(self, request):
-		print(request.FILES)
-		if request.method == 'POST' and request.FILES['myfile']:
-			myfile = request.FILES['myfile']
-			fs = FileSystemStorage()
-			filename = fs.save(myfile.name, myfile)
-			uploaded_file_url = fs.url(filename)
-			return render(request, 'core/simple_upload.html', {
-							'uploaded_file_url': uploaded_file_url
-						})
-		return render(request, 'core/simple_upload.html')
+	def post(self, request, *args, **kwargs):
+		form_class = self.get_form_class()
+		form = self.get_form(form_class)
+		files = request.FILES.getlist('file_field')
+		if form.is_valid():
+			for f in files:
+				pass
+			return self.form_valid(form)
+		else:
+			return self.form_invalid(form)
 
 class Download(APIView, TemplateView):
 	'''
@@ -174,7 +174,7 @@ def schema_view(request):
 	return Response(generator.get_schema())
 
 #@cache_page(CACHE_TTL)
-class FasAppList(generics.ListCreateAPIView, TemplateView):
+class FasAppList(APIView):
 	'''
 	query all available FasApps and return the to the user with a json response
 	'''
@@ -183,6 +183,7 @@ class FasAppList(generics.ListCreateAPIView, TemplateView):
 			authentication.TokenAuthentication,
 			authentication.SessionAuthentication
 		)
+#	permission_class = (IsAuthenticated,)
 
 	def get(self, request, *args, **kwargs):
 #		print('USER IS AUTHENTICATED ==', request.user.is_authenticated)
