@@ -14,6 +14,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+print(BASE_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -26,10 +27,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['fas.42king.com', '127.0.0.1']
 
+CACHE_TTL = 60 * 15
 
 # Application definition
 STATICFILES_DIRS = [
-  os.path.join(BASE_DIR, 'build/static'),
+  os.path.join(BASE_DIR, '/fas_frontend/app/assets'),
 ]
 
 INSTALLED_APPS = [
@@ -57,6 +59,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'fas.urls'
@@ -64,7 +69,11 @@ ROOT_URLCONF = 'fas.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-	'DIRS':['./build/static/templates',],
+	'DIRS':[
+		'fas_frontend/app/',
+#		'fas_frontend/app/login',
+#		'fas_frontend/app/home'
+	],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -91,6 +100,18 @@ DATABASES = {
         'PASSWORD'  : os.environ['FAS_DB_PASS'],
         'HOST'      : os.environ['FAS_DB_HOST'],
         'PORT'      : os.environ['FAS_DB_PORT'],
+    }
+}
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://localhost:32768/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        },
+        "KEY_PREFIX": "fas"
     }
 }
 
@@ -138,11 +159,12 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/fas_frontend/app/'
 
 APP_URL = '/apps/'
 
 APP_ROOT = os.path.join(BASE_DIR, './app_upload' + APP_URL)
+STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL)
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
@@ -155,4 +177,4 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 LOGIN_REDIRECT_URL = "home"
 LOGIN_URL = '/accounts/login/'
-
+APPEND_SLASH = True

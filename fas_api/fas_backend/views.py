@@ -3,7 +3,7 @@ import shutil
 import zipfile
 
 from fas_backend.models import FasApp, FasUser
-from fas_backend.hashit import hash_dir, zipdir
+from fas_backend.hashit import hash_file, zipdir
 from fas_backend.serializers import FasAppSerializer, FasUserSerializer
 from fas_backend.permissions import IsOwnerOrReadOnly, getPermit, get_man_schema
 
@@ -11,9 +11,11 @@ from django.conf import settings
 from django.core import serializers
 from django.shortcuts import render
 from django.core.cache import cache
+cache.clear()
 #from django.views.generic.base import View
 #from django.contrib.auth.models import User
 from django.http import HttpResponse, Http404
+from django.views.generic.base import TemplateView
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
@@ -23,18 +25,19 @@ from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from rest_framework.views import APIView
 from rest_framework import authentication
 from rest_framework.response import Response
-from rest_framework.schemas import ManualSchema, SchemaGenerator
 from rest_framework.authtoken.models import Token
 from rest_framework.compat import coreapi, coreschema
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework import mixins, generics,renderers, status
+from rest_framework.schemas import ManualSchema, SchemaGenerator
 from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 # Redis cache settings
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
+'''
 def download(request, path):
 	file_path = os.path.join(settings.MEDIA_ROOT, request['path'])
 	if os.path.exists(file_path):
@@ -43,47 +46,73 @@ def download(request, path):
 			response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
 			return response
 		raise Http404	
+'''
+class Upload(APIView, TemplateView):
+	template_name = 'upload.html'
+	
+	authentication_classes = (
+			authentication.TokenAuthentication,
+			authentication.SessionAuthentication
+		)
 
-class Download(APIView):
+	def post(self, request):
+		print(request.FILES)
+		if request.method == 'POST' and request.FILES['myfile']:
+			myfile = request.FILES['myfile']
+			fs = FileSystemStorage()
+			filename = fs.save(myfile.name, myfile)
+			uploaded_file_url = fs.url(filename)
+			return render(request, 'core/simple_upload.html', {
+							'uploaded_file_url': uploaded_file_url
+						})
+		return render(request, 'core/simple_upload.html')
+
+class Download(APIView, TemplateView):
 	'''
 	if user is authenticated
 	download option from request
 	or return 404
 	'''
+	template_name = 'download.html'
+	authentication_classes = (
+			authentication.TokenAuthentication,
+			authentication.SessionAuthentication
+		)
+
 	def get(self, request, path, format=None):
-#		print('error @ fasapi_v.2/fas/fas_backend/views.py line 76')
-		file_path = os.path.join(settings.APP_ROOT, path)
-		if request.user.is_authenticated: print('FUGGIN WORKS')
-		if os.path.exists(file_path):
-			ha = hash_dir(file_path)
-			dirPath = file_path.split('/')
+		file_path = os.path.join(settings.APP_ROOT, path+'/')
+		# if path in cache
+		app = cache.get(path)
+		if app is None:
+			app = FasApp.objects.filter(name=path)
+			cache.set(path, app, timeout=CACHE_TTL)
+		if os.path.exists(file_path) and app:
+#			ha = hash_file(file_path)
+			tru_path = 'app_upload/apps/'+path+'/'+path
+			shutil.make_archive(tru_path, 'zip', file_path)
 
-			ha_file = file_path + '/' + str(ha) + '.zip'
+			ha = hash_file(file_path)
 
-			shutil.make_archive('app_upload/apps/' + path  + '/' + ha, 'zip', file_path)
-
-			with open(ha_file, 'rb') as fh:
+			with open(tru_path+'.zip', 'rb') as fh:
 				response = HttpResponse(fh.read(), content_type="application/zip")
-				response['Content-Disposition'] = 'inline; filename=' + path
-			os.remove('app_upload/apps/' + path + '/' + ha + '.zip')
+				response['Content-Disposition'] = 'inline; filename='+path
+			os.remove(tru_path+'.zip')
 			return response
 		raise Http404
 
-class Logout(APIView):
-
-#        if coreapi is not None and coreschema is not None:
-#                schema = get_man_schema('login')
-
+class Logout(APIView, TemplateView):
         def post(self, request, format='application/json'):
                 user = logout(request)
                 return Response({
                                 'resp':'user logged out',
                         })
 
-class Login(APIView):
+class Login(APIView, TemplateView):
+	template_name = 'login/index.html'
 
 	if coreapi is not None and coreschema is not None:
 		schema = get_man_schema('login')
+		print (schema)
 
 	def post(self, request, format='application/json'):
 		user = authenticate(username=request.data['username'], password=request.data['password'])
@@ -98,7 +127,7 @@ class Login(APIView):
 		else:
 			return Response({'status':'user invalid'})
 
-class UserCreate(APIView):
+class UserCreate(APIView, TemplateView):
 	'''
 	consumes a POST request and generates a user with
 	valid user/pass/email
@@ -121,15 +150,19 @@ class UserCreate(APIView):
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def index(request):
+class HomePage(TemplateView):
 	'''
 	root index will change in future
 	'''
-	return render(request, 'index.html')
+	template_name = ('home/index.html')
+
+	def get(self, request):
+		return render(request, self.template_name)
 
 @api_view
 @renderer_classes([renderers.CoreJSONRenderer])
 def schema_view(request):
+	print('danke memes')
 	generator = SchemaGenerator(
 			title='Fas API',
 			url='https://fas.42king.com/api/schema',
@@ -137,11 +170,10 @@ def schema_view(request):
 	return Response(generator.get_schema())
 
 #@cache_page(CACHE_TTL)
-class FasAppList(generics.ListCreateAPIView):
+class FasAppList(generics.ListCreateAPIView, TemplateView):
 	'''
 	query all available FasApps and return the to the user with a json response
 	'''
-	queryset = FasApp.objects.all()
 	serializer_class = FasAppSerializer
 	authentication_classes = (
 			authentication.TokenAuthentication,
@@ -149,11 +181,15 @@ class FasAppList(generics.ListCreateAPIView):
 		)
 
 	def get(self, request, *args, **kwargs):
-		print('USER IS AUTHENTICATED ==', request.user.is_authenticated)
+#		print('USER IS AUTHENTICATED ==', request.user.is_authenticated)
 		if request.user.is_authenticated:
+			apps = cache.get('fasapps')
+			if apps is None:	
+				apps = FasApp.objects.all()
+				cache.set('fasapps', apps, timeout=CACHE_TTL)
 			content = {
 				'status': 'request was permitted',
-				'apps': serializers.serialize('json', self.get_queryset()),
+				'apps': serializers.serialize('json', apps),
 			}
 			return Response(content)
 		return Response({'status': 'request not permitted, please log in'})
@@ -183,21 +219,21 @@ class FasAppDetail(generics.RetrieveUpdateDestroyAPIView):
 	serializer_class = FasAppSerializer
 	permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                       		IsOwnerOrReadOnly,)
-'''
 
 class FasUserList(generics.ListAPIView):
-	'''
+	\'\'\'
 	admin list of all users
-	'''
+	\'\'\'
 	# TODO : admin only reads
 	queryset = FasUser.objects.all()
 	serializer_class = FasUserSerializer
 
 #@cache_page(CACHE_TTL)
 class FasUserDetail(generics.RetrieveAPIView):
-	'''
+	\'\'\'
 	admin detail of all users
-	'''
+	\'\'\'
 	# TODO : admin only reads
 	queryset = FasUser.objects.all()
 	serializer_class = FasUserSerializer
+'''

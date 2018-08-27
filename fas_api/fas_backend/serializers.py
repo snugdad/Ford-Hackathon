@@ -5,7 +5,10 @@ from rest_framework.validators import UniqueValidator
 
 
 class FasAppSerializer(serializers.ModelSerializer):
-
+#	name = serializers.NameField(
+#			required=True,
+#			validators=[UniqueValidator(queryset=FasApp.objects.all())]
+#                )
 	class Meta:
 		model = FasApp
 		fields = ('created', 'name', 'url', 'repo', 'size',)
