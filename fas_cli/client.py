@@ -123,7 +123,7 @@ def list_apps(opt, client, schema):
                             url='https://fas.42king.com/api/apps',
                             headers=formHeader()
                         )
-#            print(response.content)
+            print(response.content)
             appList = json.loads(response.content.decode('utf-8'))
             status = appList['status']
 #            print(status)
@@ -184,7 +184,7 @@ def install(app, client, schema):
                 barr = open(insp, 'rb').read() # bytes array
                 # HMAC verified with user's token
                 match_ha = hmac_sec(SESSION_TOKEN.encode(encoding='UTF-8'), barr)
-#                print(match_ha, ha)
+                print(match_ha, ha)
                 if match_ha != ha:
                     print('unverified files, do not open')
                     return False
@@ -293,4 +293,10 @@ if __name__ == "__main__":
         handle(err)
     '''
 #    test_client_connection()
-    run_client()
+    try:
+        run_client()
+    except:
+        pass
+    finally:
+        global SESSION_TOKEN
+        SESSION_TOKEN = None
