@@ -171,13 +171,18 @@ def install(app, client, schema):
             
             # TODO : unhash/verify
 
-            zip_ref = zipfile.ZipFile(insp, 'r')
-            zip_ref.extractall('./apps/'+app+'/')
-            zip_ref.close()
+            try:
+                zip_ref = zipfile.ZipFile(insp, 'r')
+                zip_ref.extractall('./apps/'+app+'/')
+                zip_ref.close()
+            except Exception as e:
+                print(e)
+                print('fuk')
             for file in os.listdir('./apps/'+app):
                 print (file)
                 if '.zip' in file and app in file:
                     ha = file.split('.')[1]
+            print('HA==',ha)
             os.remove(insp)
             os.remove('./apps/'+app+'/'+app+'.'+ha+'.zip')
             match_ha = hash_dir('./apps/'+app) 
