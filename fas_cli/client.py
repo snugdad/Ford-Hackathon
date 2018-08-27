@@ -7,7 +7,7 @@ import getpass
 import zipfile
 import requests
 import subprocess
-from hashit import hash_file
+from hashit import hmac_sec
 from coreapi import codecs, Client
 
 SESSION_TOKEN=None
@@ -175,8 +175,10 @@ def install(app, client, schema):
                 for chunk in response.iter_content(chunk_size=128):
                     fd.write(chunk)
             try:
-                match_ha = hash_file(insp)
-                print(match_ha, ha)
+                barr = open(insp, 'rb').read() # bytes array
+                # HMAC verified with user's token
+                match_ha = hmac_sec(SESSION_TOKEN.encode(encoding='UTF-8'), barr)
+#                print(match_ha, ha)
                 if match_ha != ha:
                     print('unverified files, do not open')
                     return False
